@@ -39,7 +39,7 @@ export function SignIn() {
         onChangeText={setPassword}
       />
 
-      <Button title="Entrar" w="full" onPress={handleSigning}/>
+      <Button title="Entrar" w="full" onPress={handleSigning} />
     </VStack>
   );
 }
