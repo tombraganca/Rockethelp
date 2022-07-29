@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Alert } from "react-native";
 import { VStack, Heading, Icon, useTheme } from "native-base";
 import { Envelope, Key } from "phosphor-react-native";
+import auth from "@react-native-firebase/auth";
 
 import Logo from "../assets/logo_primary.svg";
 
@@ -8,12 +10,38 @@ import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 
 export function SignIn() {
+  const [isLoading, setIsLoading] = useState(false);
   const { colors } = useTheme();
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSigning() {
-    console.log(name, password);
+  async function handleSigning() {
+    if (!email || !password) {
+      return Alert.alert("Entrar", "Informe email e senha");
+    }
+
+    try {
+      setIsLoading(true);
+      await auth().signInWithEmailAndPassword(email, password);
+    } catch (error) {
+      console.log(error);
+
+      if (error.code === "auth/invalid-email") {
+        Alert.alert("Entrar", "Email ou senha inválida.");
+      }
+
+      if (error.code === "auth/user-not-found") {
+        Alert.alert("Entrar", "Usuário não cadastrado.");
+      }
+
+      if (error.code === "auth/wrong-password") {
+        Alert.alert("Entrar", "Email ou senha inválida.");
+      }
+
+      return Alert.alert("Entrar", "Não foi possível entrar");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -29,7 +57,7 @@ export function SignIn() {
         InputLeftElement={
           <Icon as={<Envelope color={colors.gray[300]} />} ml={4} />
         }
-        onChangeText={setName}
+        onChangeText={setEmail}
       />
       <Input
         placeholder="Senha"
@@ -39,7 +67,12 @@ export function SignIn() {
         onChangeText={setPassword}
       />
 
-      <Button title="Entrar" w="full" onPress={handleSigning} />
+      <Button
+        title="Entrar"
+        w="full"
+        onPress={handleSigning}
+        isLoading={isLoading}
+      />
     </VStack>
   );
 }
